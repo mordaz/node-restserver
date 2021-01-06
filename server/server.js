@@ -21,8 +21,9 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+//Importamos metodos POST para hacer login de Ususarios del archivo login.js
 //Importamos metodos GET POST PUT DELETE de Ususarios del archivo usuario.js
-app.use(require('./routes/usuario.js'));
+app.use(require('./routes/index.js'));
 
 //Conectando con la base de datos
 //Creando parametros de conexion dbOptions

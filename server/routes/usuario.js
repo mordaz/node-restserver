@@ -7,6 +7,9 @@ const app = express();
 //Importamos Schema de usuario para poder grabar en la base de datos
 const Usuario = require('../models/usuarios.js');
 
+//Usando destructuracion obtenemos la funcion de autentificacion
+const { verificaToken, verificaAdminRole } = require('../middlewares/autenticacion.js');
+
 //Creamos variable para encriptar contraseña
 //$ npm i bcrypt --save
 const bcrypt = require('bcrypt');
@@ -16,10 +19,13 @@ const bcrypt = require('bcrypt');
 //npm install underscore --save
 //https://underscorejs.org
 const underscore = require('underscore');
+const { json } = require('body-parser');
 
 //Se crea una funcion get de respuesta 
 //get obtener registro
-app.get('/usuarios', function(req, res) {
+//verificaToken es un middleware que se dispara automaticamente al entrar a la funcion
+//verificaToken sirve para hacer validaciones hasta cumplirse se ejecuta el codigo de aqui
+app.get('/usuarios', verificaToken, function(req, res) {
 
     //varibale para indicar a partir de que registro se va a obtener la lista
     //req.query.desde se obtiene de los parametros opcionales de la peticion get
@@ -66,7 +72,10 @@ app.get('/usuarios', function(req, res) {
 
 //Se crea una funcion post de respuesta 
 //post crear nuevo registro
-app.post('/usuarios', function(req, res) {
+//verificaToken es un middleware que se dispara automaticamente al entrar a la funcion
+//verificaToken sirve para hacer validaciones hasta cumplirse se ejecuta el codigo de aqui
+//verificaAdminRole sirve para verificar el role del usuario que intenta hacer la insercion
+app.post('/usuarios', [verificaToken, verificaAdminRole], function(req, res) {
     //obtenemos el body serializado por body-parser
     let body = req.body;
 
@@ -103,7 +112,10 @@ app.post('/usuarios', function(req, res) {
 
 //Se crea una funcion put de respuesta 
 //put actualizar registro con el primer parametro asignandolo a id
-app.put('/usuarios/:id', function(req, res) {
+//verificaToken es un middleware que se dispara automaticamente al entrar a la funcion
+//verificaToken sirve para hacer validaciones hasta cumplirse se ejecuta el codigo de aqui
+//verificaAdminRole sirve para verificar el role del usuario que intenta hacer el cambio
+app.put('/usuarios/:id', [verificaToken, verificaAdminRole], function(req, res) {
     //obtenemos el id que fue enviado como parametro
     let id = req.params.id;
     //obtenemos el body serializado por body-parser
@@ -129,7 +141,7 @@ app.put('/usuarios/:id', function(req, res) {
     //El parametro id viene en forma de parametro desde la peticion PUT
     //https://mongoosejs.com/docs/api/model.html#model_Model.findByIdAndUpdate
     //options new:true regresa el registro acutalizado, runValidators: ejecuta las validaciones del Schema
-    Usuario.findByIdAndUpdate(id, usuarioActualizado2, { new: true, runValidators: true, context: 'query' }, (err, usuarioDB) => {
+    Usuario.findByIdAndUpdate(id, usuarioActualizado2, { new: true, runValidators: true, useFindAndModify: false }, (err, usuarioDB) => {
         if (err) {
             //En caso de recibir un error al modificar responder codigo 400 bad request
             //Respondemos un JSon con el formato de error
@@ -149,7 +161,10 @@ app.put('/usuarios/:id', function(req, res) {
 
 //Se crea una funcion delete de respuesta 
 //delete borrar registro
-app.delete('/usuarios/:id', function(req, res) {
+//verificaToken es un middleware que se dispara automaticamente al entrar a la funcion
+//verificaToken sirve para hacer validaciones hasta cumplirse se ejecuta el codigo de aqui
+//verificaAdminRole sirve para verificar el role del usuario que intenta hacer el cambio
+app.delete('/usuarios/:id', [verificaToken, verificaAdminRole], function(req, res) {
     //obtenemos el id que fue enviado como parametro
     let id = req.params.id;
 
@@ -219,5 +234,5 @@ app.delete('/usuarios/:id', function(req, res) {
 
 });
 
-//Se exporta la app como modulo para servider de middleware en el proyecto principal
+//Se exporta la app como modulo para servidor de middleware en el proyecto principal
 module.exports = app;

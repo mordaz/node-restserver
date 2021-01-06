@@ -15,6 +15,16 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 process.env.PORT = process.env.PORT || 3000;
 
 // =============================
+// LOGIN
+// =============================
+//Fecha de expiracion de token para la sesion de usuario
+// 60 Seg x 60 Min x 24 Hrs = 30 Dias
+process.env.CADUCIDAD_TOKEN = 1000 * 60 * 24 * 30;
+//Seed semilla de autenticacion para generacion de token
+//Semilla declarada en el servidor 'Heroku' o localmente
+process.env.SEED = process.env.SEED || 'semilla-de-token-desarollo';
+
+// =============================
 // BASE DE DATOS
 // =============================
 //Creamos una variable con la direccion de la base de datos
