@@ -15,7 +15,13 @@ const bcrypt = require('bcrypt');
 //$ npm i jsonwebtoken --save
 const jwt = require('jsonwebtoken');
 
-//Se crea una funcion post de respuesta 
+//Creamos un objeto validador de tokens sign in de google
+//npm install google-auth-library --save
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.CLIENT_ID);
+
+
+//Se crea una funcion post de respuesta al logn in normal
 //post crear nuevo registro
 app.post('/login', function(req, res) {
 
@@ -73,6 +79,125 @@ app.post('/login', function(req, res) {
             usuario: usuarioDB,
             token: token
         });
+    });
+});
+
+//Configuracion de google para hacer login mediante google sign in
+//Funcion descargada de https://developers.google.com/identity/sign-in/web/backend-auth
+async function verify(token) {
+    const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.CLIENT_ID, // Specify the CLIENT_ID of the app that accesses the backend
+        // Or, if multiple clients access the backend:
+        //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+    });
+    const payload = ticket.getPayload();
+
+    //Al verificar el token de google obtendremos los datos necesarios para crear un usuario en base de datos 
+    //Los regresaremos a la funcion post de autentificacion
+    return {
+        nombre: payload.name,
+        email: payload.email,
+        img: payload.picture,
+        google: true
+    }
+}
+
+//Se crea una funcion post de respuesta al logn in de google
+//post crear nuevo registro
+app.post('/google', async(req, res) => {
+
+    //obtenemos el token google recibido de la peticion x-form-www-urlencoded 
+    let token = req.body.idtoken;
+
+    //ejecutamos la funcion de verificacion de google para obtener los datos del usuario
+    //como la funcion de verificacion es un async se debe usar await
+    //para poder usar await la funcion callback principal debe ser async tambien
+    let googleUser = await verify(token)
+        .catch(e => {
+            // En caso de error respondemos con estatus de error
+            return res.status(403).json({
+                ok: false,
+                err: e
+            });
+        });
+
+    //verificamos que el usuario no exista en la base de datos
+    //findOne recibe en su primer parametro el objeto a comparar
+    //en el segundo parametro regresa una funcion callback con el usuarioDB encontrado
+    Usuario.findOne({ email: googleUser.email }, (err, usuarioDB) => {
+        if (err) {
+            //En caso de recibir un error al grabar responder codigo 500 error del servidor
+            //Respondemos un JSon con el formato de error
+            return res.status(500).json({
+                ok: false,
+                err
+            });
+        }
+
+        //Si encontro un usuario registrado con ese email
+        if (usuarioDB) {
+            //Si el usuario no se auntentico por google
+            if (usuarioDB.google === false) {
+                return res.status(400).json({
+                    ok: false,
+                    err: {
+                        message: 'Debe ingresar con login normal'
+                    }
+                });
+            }
+            //Si el usuario si estaba autenticado con google generar su token de sesion
+            else {
+                let token = jwt.sign({
+                    usuario: usuarioDB,
+                }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+            }
+
+            //En caso de que la validacion sea correcta regresamos el usuario
+            res.json({
+                ok: true,
+                usuario: usuarioDB,
+                token
+            });
+        }
+
+        //Si el usuario logeado no existe en la base de datos creamos un nuevo usuario
+        else {
+            //Creamos una instancia del Schema de Usuario para guardar en la base de datos
+            //Asignamos a cada parametro del Schema de Usuario un valor del body de la peticion
+            let usuario = new Usuario({
+                nombre: googleUser.nombre,
+                email: googleUser.email,
+                img: googleUser.img,
+                password: ':)',
+                role: 'USER_ROLE',
+                google: true
+            });
+
+            //Grabamos el Schema Usuario a la base de datos 
+            //usuarioDB es la respuesta del usuario grabado en mongo
+            usuario.save((err, usuarioDB) => {
+                if (err) {
+                    //En caso de recibir un error al grabar responder codigo 400 bad request
+                    //Respondemos un JSon con el formato de error
+                    return res.status(400).json({
+                        ok: false,
+                        err
+                    });
+                }
+                //En caso de grabar el usuario correctamente respondemos y generamos un token
+                let token = jwt.sign({
+                    usuario: usuarioDB,
+                }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+
+                //si el token se genero correctamente resondemos el token y el usario
+                res.json({
+                    ok: true,
+                    usuario: usuarioDB,
+                    token
+                });
+            });
+        }
     });
 });
 

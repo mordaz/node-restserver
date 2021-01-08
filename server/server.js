@@ -21,6 +21,13 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+//Habilitar carpeta publica para acceder al index.html de la carpeta public
+//importamos path para obtener la ruta donde se esta ejecutando la aplicacion
+//path es un paquete directo de node no requiere npm
+const path = require('path');
+//cargamos el middleware de la direccion de la carpeta publica para que carge el index.html
+app.use(express.static(path.resolve(__dirname, '../public')));
+
 //Importamos metodos POST para hacer login de Ususarios del archivo login.js
 //Importamos metodos GET POST PUT DELETE de Ususarios del archivo usuario.js
 app.use(require('./routes/index.js'));
