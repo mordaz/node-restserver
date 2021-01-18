@@ -62,4 +62,5 @@ usuarioSchema.methods.toJSON = function() {
 usuarioSchema.plugin(mongooseUniqueValidator, { message: '{PATH} debe ser único' });
 
 //Exportamos el Schema de usuarios con el nombre 'Usuario'
-module.exports = mongoose.model('Usuario', usuarioSchema);
+//Exportar el schema sirve para referencias el schema en otros schemas moongose
+module.exports = mongoose.model('Usuarios', usuarioSchema);

@@ -75,7 +75,7 @@ app.get('/usuarios', verificaToken, function(req, res) {
 //verificaToken es un middleware que se dispara automaticamente al entrar a la funcion
 //verificaToken sirve para hacer validaciones hasta cumplirse se ejecuta el codigo de aqui
 //verificaAdminRole sirve para verificar el role del usuario que intenta hacer la insercion
-app.post('/usuarios', [verificaToken, verificaAdminRole], function(req, res) {
+app.post('/usuarios', function(req, res) {
     //obtenemos el body serializado por body-parser
     let body = req.body;
 
@@ -228,7 +228,7 @@ app.delete('/usuarios/:id', [verificaToken, verificaAdminRole], function(req, re
         //Y enviamos el usuario modificado en la BD
         res.json({
             ok: true,
-            usuario: usuarioEliminado
+            meesage: 'Usuario Eliminado'
         });
     });
 
