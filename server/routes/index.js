@@ -16,5 +16,11 @@ app.use(require('./categoria.js'));
 //Importamos metodos GET POST PUT DELETE de Productos del archivo producto.js
 app.use(require('./producto.js'));
 
+//Importamos las funciones para cargar archivos uploads.js
+app.use(require('./uploads.js'));
+
+//Importamos las funciones para servir imagenes
+app.use(require('./imagenes.js'));
+
 //Se exporta la app como modulo para servidor de middleware en el proyecto principal
 module.exports = app;

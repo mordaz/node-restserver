@@ -10,7 +10,6 @@ const Producto = require('../models/productos.js');
 //Usando destructuracion obtenemos la funcion de autentificacion
 const { verificaToken } = require('../middlewares/autenticacion.js');
 
-
 //Se crea una funcion get de respuesta 
 //verificaToken es un middleware que se dispara automaticamente al entrar a la funcion
 //verificaToken sirve para hacer validaciones hasta cumplirse se ejecuta el codigo de aqui

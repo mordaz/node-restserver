@@ -61,7 +61,43 @@ let verificaAdminRole = (req, res, next) => {
     }
 }
 
+// =============================
+// VERIFICAR TOKEN IMG 
+// =============================
+
+//Funcion callback que recibe de parametros req -> solicitud , res ->respuesta , next ->
+//VerificaTokenImg es para recibir el token como parametro y no como header
+let verificaTokenImg = (req, res, next) => {
+
+    //Obtener token desde parametro
+    let token = req.query.token;
+
+    //Verificamos si el token es valido
+    //token es el token a validar, process.env.SEED es la semilla con que se genero el token
+    jwt.verify(token, process.env.SEED, (err, decoded) => {
+        //Si recibimos un error enviamos mensaje de error
+        if (err) {
+            return res.status(401).json({
+                ok: false,
+                err: {
+                    meesage: 'Token invalido'
+                }
+            });
+        }
+
+        //En caso de que la validacion sea correcta respondemos los datos del usuario
+        //Los datos de usuario vienen ocultos en el mismo token ya decodificado
+        req.usuario = decoded.usuario;
+
+        //Ejecutamos next hasta que las validaciones se realicen de forma correcta 
+        //Si no se ejecuta next el middleware no permitira continuar con la funcion
+        //El Next se debe ejecutar dentro de la validacion 
+        next();
+    });
+};
+
 module.exports = {
     verificaToken,
-    verificaAdminRole
+    verificaAdminRole,
+    verificaTokenImg
 };

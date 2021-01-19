@@ -10,6 +10,7 @@ var productoSchema = new Schema({
     precioUni: { type: Number, required: [true, 'El precio únitario es necesario'] },
     descripcion: { type: String, required: false },
     disponible: { type: Boolean, required: true, default: true },
+    img: { type: String, required: false },
     //categoria es de tipo ID moongose => Schema.Types.ObjectId
     //ref: 'Categorias' hace relacion con el eschema Categorias
     categoria: { type: Schema.Types.ObjectId, ref: 'Categorias', required: true },
